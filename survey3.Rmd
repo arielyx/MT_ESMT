@@ -1,0 +1,73 @@
+---
+title: "survey3"
+output: html_document
+date: "2023-07-26"
+---
+
+```{r}
+survey3 <- read.csv("/Users/arielx/Desktop/MT/MT_survey - forR_survey3.csv")
+survey3 <- survey3[-1, ]
+
+
+
+names(survey3) <- c("product_name", "x3_rounded_prime", "x1_necessity_level","x2_price_roundedness","y_purchase_intention")
+
+
+survey3_low <- survey3[0:264, ]
+survey3_mid <- survey3[265:520, ]
+survey3_high <- survey3[521:769, ]
+```
+
+```{r}
+# Create a contingency table
+contingency_table_high_3 <- table(survey3_high$x2_price_roundedness, survey3_high$x1_necessity_level)
+
+contingency_table_mid_3 <- table(survey3_mid$x2_price_roundedness, survey3_mid$x1_necessity_level)
+
+contingency_table_low_3 <- table(survey3_low$x2_price_roundedness, survey3_low$x1_necessity_level)
+
+# Perform Fisher's exact test
+chi_square_result_high_3 <- chisq.test(contingency_table_high_3)
+chi_square_result_mid_3 <- chisq.test(contingency_table_mid_3)
+chi_square_result_low_3 <- chisq.test(contingency_table_low_3)
+# Print Fisher's exact test result
+print(chi_square_result_high_3)
+print(chi_square_result_mid_3)
+print(chi_square_result_low_3)
+
+```
+
+```{r}
+# Load the necessary libraries
+library(dplyr)
+
+# Fit the regression model with interaction
+model_survey3 <- lm(y_purchase_intention ~ x1_necessity_level + x2_price_roundedness + x1_necessity_level*x3_rounded_prime + x1_necessity_level * x2_price_roundedness + x2_price_roundedness * x3_rounded_prime, data = survey3)
+
+model_survey3_high <- lm(y_purchase_intention ~ x1_necessity_level + x2_price_roundedness + x1_necessity_level*x3_rounded_prime + x1_necessity_level * x2_price_roundedness + x2_price_roundedness * x3_rounded_prime,  data = survey3_high)
+
+model_survey3_mid <- lm(y_purchase_intention ~ x1_necessity_level + x2_price_roundedness + x1_necessity_level*x3_rounded_prime + x1_necessity_level * x2_price_roundedness + x2_price_roundedness * x3_rounded_prime,  data = survey3_mid)
+
+model_survey3_low <- lm(y_purchase_intention ~ x1_necessity_level + x2_price_roundedness + x1_necessity_level*x3_rounded_prime + x1_necessity_level * x2_price_roundedness + x2_price_roundedness * x3_rounded_prime,  data = survey3_low)
+
+
+# View the summary of the model
+summary(model_survey3)
+summary(model_survey3_high)
+summary(model_survey3_mid)
+summary(model_survey3_low)
+```
+
+```{r}
+model_interaction3 <- lm(y_purchase_intention ~ x1_necessity_level * x3_rounded_prime + x1_necessity_level * x2_price_roundedness + x2_price_roundedness * x3_rounded_prime, data = survey3)
+anova_result_3 <- anova(model_interaction3)
+interaction_F_value_3 <- anova_result_3$"F value"[1]
+interaction_p_value_3 <- anova_result_3$"Pr(>F)"[1]
+
+library(tidyverse)
+# Perform the two-way ANOVA
+model_aov_3 <- aov(y_purchase_intention ~ x1_necessity_level * x3_rounded_prime + x1_necessity_level * x2_price_roundedness + x2_price_roundedness * x3_rounded_prime, data = survey3)
+# Extract ANOVA results
+anova_table_3 <- summary(model_aov_3)
+
+```

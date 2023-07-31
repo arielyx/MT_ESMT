@@ -1,0 +1,123 @@
+---
+title: "mt draft"
+output: html_document
+date: "2023-07-24"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+install.packages("dplyr")
+install.packages("corrplot")
+install.packages("tidyverse")
+```
+
+
+```{r}
+survey1 <- read.csv("/Users/arielx/Desktop/MT/MT_survey - forR_survey1.csv")
+survey1 <- survey1[-1, ]
+
+
+
+names(survey1) <- c("product_name", "x1_necessity_level", "x2_roundedness","x21_roundedwith0","x22_nonroundednot5","y_purchase_intention")
+
+# Replace 'necessity' with 1 in the 'necessity_column'
+survey1$x1_necessity_level <- ifelse(survey1$x1_necessity_level == 'necessity', 1, 0)
+
+survey1_mid <- survey1[0:191, ]
+survey1_high <- survey1[192:385, ]
+survey1_low <- survey1[386:575, ]
+
+#names(survey1_high) <- c("product_name", "x1_necessity_level", #"x2_roundedness","x21_roundedwith0","x22_nonroundednot5","y_purchase_intention")
+#names(survey1_mid) <- c("product_name", "x1_necessity_level", #"x2_roundedness","x21_roundedwith0","x22_nonroundednot5","y_purchase_intention")
+#names(survey1_low) <- c("product_name", "x1_necessity_level", #"x2_roundedness","x21_roundedwith0","x22_nonroundednot5","y_purchase_intention")
+```
+
+## See X1 and X2 correlation
+
+#```{r}
+#str(survey1)
+#
+#survey1 <- survey1 %>%
+#  mutate(x1_necessity_level = as.numeric(x1_necessity_level)) %>%
+#  mutate(x21_roundedwith0 = as.numeric(x21_roundedwith0)) %>%
+#  mutate(x22_nonroundednot5 = as.numeric(x22_nonroundednot5)) 
+#
+#
+## Calculate the correlation matrix
+#cor_matrix_survey1 <- cor(survey1[, c("x1_necessity_level","x21_roundedwith0", #"x22_nonroundednot5")])
+#
+## Print the correlation matrix
+#print(cor_matrix_survey1)
+#```
+
+#```{r}
+#library(corrplot)
+#
+## Create the correlation chart using corrplot
+#corrplot(cor_matrix_survey1, method = "circle", type = "full", tl.cex = 0.8)
+#```
+
+```{r pressure, echo=FALSE}
+# Create a contingency table
+contingency_table_high <- table(survey1_high$x1_necessity_level, survey1_high$x21_roundedwith0) #survey1$x22_nonroundednot5)
+
+contingency_table_mid <- table(survey1_mid$x1_necessity_level, survey1_mid$x21_roundedwith0) #survey1$x21_roundedwith0) survey1$x22_nonroundednot5)
+
+contingency_table_low <- table(survey1_low$x1_necessity_level, survey1_low$x21_roundedwith0) #survey1$x21_roundedwith0) survey1$x22_nonroundednot5)
+
+# Perform Fisher's exact test
+chi_square_result_high <- chisq.test(contingency_table_high)
+chi_square_result_mid <- chisq.test(contingency_table_mid)
+chi_square_result_low <- chisq.test(contingency_table_low)
+# Print Fisher's exact test result
+print(chi_square_result_high)
+print(chi_square_result_mid)
+print(chi_square_result_low)
+
+```
+
+## Run lm() with 2 dummy independent variables
+
+
+```{r pressure, echo=FALSE}
+# Load the necessary libraries
+library(dplyr)
+
+# Fit the regression model with interaction
+model_survey1 <- lm(y_purchase_intention ~ x1_necessity_level + x21_roundedwith0 + x22_nonroundednot5 + x1_necessity_level*x21_roundedwith0 + x1_necessity_level*x22_nonroundednot5, data = survey1)
+
+model_survey1_high <- lm(y_purchase_intention ~ x1_necessity_level + x21_roundedwith0 + x22_nonroundednot5 + x1_necessity_level*x21_roundedwith0 + x1_necessity_level*x22_nonroundednot5, data = survey1_high)
+
+model_survey1_mid <- lm(y_purchase_intention ~ x1_necessity_level + x21_roundedwith0 + x22_nonroundednot5 + x1_necessity_level*x21_roundedwith0 + x1_necessity_level*x22_nonroundednot5, data = survey1_mid)
+
+model_survey1_low <- lm(y_purchase_intention ~ x1_necessity_level + x21_roundedwith0 + x22_nonroundednot5 + x1_necessity_level*x21_roundedwith0 + x1_necessity_level*x22_nonroundednot5, data = survey1_low)
+
+
+# View the summary of the model
+summary(model_survey1)
+summary(model_survey1_high)
+summary(model_survey1_mid)
+summary(model_survey1_low)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r pressure, echo=FALSE}
+model_interaction1 <- lm(y_purchase_intention ~ x1_necessity_level * x21_roundedwith0 + x1_necessity_level*x22_nonroundednot5, data = survey1)
+anova_result <- anova(model_interaction1)
+interaction_F_value <- anova_result$"F value"[1]
+interaction_p_value <- anova_result$"Pr(>F)"[1]
+
+library(tidyverse)
+# Perform the two-way ANOVA
+model_aov <- aov(y_purchase_intention ~ x1_necessity_level * x21_roundedwith0 + x1_necessity_level*x22_nonroundednot5, data = survey1_low)
+# Extract ANOVA results
+anova_table <- summary(model_aov)
+
+
+
+```
+
+
+
+

@@ -1,0 +1,72 @@
+---
+title: "mt draft survey2"
+output: html_document
+date: "2023-07-26"
+---
+```{r}
+survey2 <- read.csv("/Users/arielx/Desktop/MT/MT_survey - forR_survey2.csv")
+survey2 <- survey2[-1, ]
+
+
+
+names(survey2) <- c("product_name", "x3_feeling_prime", "x1_necessity_level","x2_price_roundedness","y_purchase_intention")
+
+
+survey2_high <- survey2[0:255, ]
+survey2_low <- survey2[256:508, ]
+survey2_mid <- survey2[510:753, ]
+```
+
+```{r}
+# Create a contingency table
+contingency_table_high_2 <- table(survey2_high$x2_price_roundedness, survey2_high$x1_necessity_level)
+
+contingency_table_mid_2 <- table(survey2_mid$x2_price_roundedness, survey2_mid$x1_necessity_level)
+
+contingency_table_low_2 <- table(survey2_low$x2_price_roundedness, survey2_low$x1_necessity_level)
+
+# Perform Fisher's exact test
+chi_square_result_high_2 <- chisq.test(contingency_table_high_2)
+chi_square_result_mid_2 <- chisq.test(contingency_table_mid_2)
+chi_square_result_low_2 <- chisq.test(contingency_table_low_2)
+# Print Fisher's exact test result
+print(chi_square_result_high_2)
+print(chi_square_result_mid_2)
+print(chi_square_result_low_2)
+
+```
+
+```{r}
+# Load the necessary libraries
+library(dplyr)
+
+# Fit the regression model with interaction
+model_survey2 <- lm(y_purchase_intention ~ x1_necessity_level + x2_price_roundedness + x1_necessity_level*x3_feeling_prime + x1_necessity_level * x2_price_roundedness + x2_price_roundedness * x3_feeling_prime, data = survey2)
+
+model_survey2_high <- lm(y_purchase_intention ~ x1_necessity_level + x2_price_roundedness + x1_necessity_level*x3_feeling_prime + x1_necessity_level * x2_price_roundedness + x2_price_roundedness * x3_feeling_prime,  data = survey2_high)
+
+model_survey2_mid <- lm(y_purchase_intention ~ x1_necessity_level + x2_price_roundedness + x1_necessity_level*x3_feeling_prime + x1_necessity_level * x2_price_roundedness + x2_price_roundedness * x3_feeling_prime,  data = survey2_mid)
+
+model_survey2_low <- lm(y_purchase_intention ~ x1_necessity_level + x2_price_roundedness + x1_necessity_level*x3_feeling_prime + x1_necessity_level * x2_price_roundedness + x2_price_roundedness * x3_feeling_prime,  data = survey2_low)
+
+
+# View the summary of the model
+summary(model_survey2)
+summary(model_survey2_high)
+summary(model_survey2_mid)
+summary(model_survey2_low)
+```
+
+```{r}
+model_interaction2 <- lm(y_purchase_intention ~ x1_necessity_level * x3_feeling_prime + x1_necessity_level * x2_price_roundedness + x2_price_roundedness * x3_feeling_prime, data = survey2)
+anova_result_2 <- anova(model_interaction2)
+interaction_F_value_2 <- anova_result_2$"F value"[1]
+interaction_p_value_2 <- anova_result_2$"Pr(>F)"[1]
+
+library(tidyverse)
+# Perform the two-way ANOVA
+model_aov_2 <- aov(y_purchase_intention ~ x1_necessity_level * x3_feeling_prime + x1_necessity_level * x2_price_roundedness + x2_price_roundedness * x3_feeling_prime, data = survey2)
+# Extract ANOVA results
+anova_table_2 <- summary(model_aov_2)
+
+```
